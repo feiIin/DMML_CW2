@@ -4,7 +4,8 @@ from sklearn.metrics import confusion_matrix, classification_report
 from sklearn.model_selection import KFold, cross_val_predict
 from sklearn import linear_model
 import numpy as np
-
+from pandas_ml import ConfusionMatrix
+from sklearn.neural_network import MLPClassifier
 
 def tenfold_cross_validation(X, y):
     """
@@ -16,13 +17,30 @@ def tenfold_cross_validation(X, y):
     for train_index, test_index in KFold(10).split(X):
         x_train, x_test = X[train_index], X[test_index]
         y_train, y_test = y[train_index], y[test_index]
-    linear_classifier = linear_model.SGDClassifier(max_iter=1000, tol=1e-3)
+
+    # change the parameters to see how each parameter affects the l1inear classifier
+    linear_classifier = linear_model.SGDClassifier(alpha=0.0001, average=False, class_weight=None,
+                  early_stopping=False, epsilon=0.1, eta0=0.0, fit_intercept=True,
+                  l1_ratio=0.15, learning_rate='optimal', loss='hinge', max_iter=1000,
+                  n_iter_no_change=5, n_jobs=None, penalty='l2', power_t=0.5,
+                  random_state=None, shuffle=False, tol=0.001, validation_fraction=0.1,
+                  verbose=0, warm_start=False)
+
+    # start training the classifier
     linear_classifier.fit(x_train, y_train)
     print("\nResults from ten cross validation: \n", linear_classifier.score(x_test, y_test))
 
     # create and plot the confusion matrix
-    y_train_pred = cross_val_predict(linear_classifier, x_test, y_test, cv=3)
+    # cross validation done with cross_val_
+    y_train_pred = cross_val_predict(linear_classifier, x_test, y_test, cv=10)
     print("\nConfusion matrix from ten cross validation: \n", confusion_matrix(y_test, y_train_pred))
+    print("\n")
+    print("Classification report")
+    print(classification_report(y_test, y_train_pred))
+
+    print("\n with pandas_ml: \n")
+    cm = ConfusionMatrix(y_test, y_train_pred)
+    cm.print_stats()
 
 
 def using_testset(X_trainset, y_trainset, X_testset, y_testset):
@@ -31,7 +49,12 @@ def using_testset(X_trainset, y_trainset, X_testset, y_testset):
     Required in task 5.
     :return:
     """
-    classifier = linear_model.SGDClassifier(max_iter=1000, tol=1e-3)
+    classifier = linear_model.SGDClassifier(alpha=0.0001, average=False, class_weight=None,
+                  early_stopping=False, epsilon=0.1, eta0=0.0, fit_intercept=True,
+                  l1_ratio=0.15, learning_rate='optimal', loss='hinge', max_iter=1000,
+                  n_iter_no_change=5, n_jobs=None, penalty='l2', power_t=0.5,
+                  random_state=None, shuffle=False, tol=0.001, validation_fraction=0.1,
+                  verbose=0, warm_start=False)
     classifier.fit(X_trainset, y_trainset)
     print("\n\nResults using test set: \n", classifier.score(X_testset, y_testset))
 
@@ -59,6 +82,9 @@ def main():
 
     # test set validation, task 5
     using_testset(X_trainset, y_trainset, X_testset, y_testset)
+
+    nn=MLPClassifier(hidden_layer_sizes=(10,))
+
 
 
 
